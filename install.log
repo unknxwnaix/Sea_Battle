@@ -1,0 +1,9 @@
+[02:25:04 2024-11-21] FETCHING Version 2.38.4
+[02:25:04 2024-11-21] CREATING /Users/aix/.spicetify
+[02:25:04 2024-11-21] DOWNLOADING https://github.com/spicetify/cli/releases/download/v2.38.4/spicetify-2.38.4-darwin-arm64.tar.gz
+[02:25:07 2024-11-21] EXTRACTING /Users/aix/.spicetify/spicetify.tar.gz
+[02:25:07 2024-11-21] SETTING EXECUTABLE PERMISSIONS TO /Users/aix/.spicetify/spicetify
+[02:25:07 2024-11-21] REMOVING /Users/aix/.spicetify/spicetify.tar.gz
+[02:25:07 2024-11-21] APPENDING /Users/aix/.spicetify to PATH in /Users/aix/.zshrc
+[02:25:07 2024-11-21] spicetify v2.38.4 was installed successfully to /Users/aix/.spicetify
+[02:25:07 2024-11-21] Run 'spicetify --help' to get started

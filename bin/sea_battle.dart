@@ -9,6 +9,10 @@ class GameManager {
   late ShipManager shipManager;
   int playerScore = 0;
   int computerScore = 0;
+  int playerHits = 0;
+  int playerMisses = 0;
+  int computerHits = 0;
+  int computerMisses = 0;
 
   GameManager() {
     alertManager = AlertManager();
@@ -20,7 +24,7 @@ class GameManager {
   void startGame() {
     alertManager.printMessage("Добро пожаловать в игру Морской бой!");
     alertManager.printMessage("Хотите расставить корабли самостоятельно? (да/нет):");
-    
+
     var choice;
     while (choice != 'да' && choice != 'нет') {
       choice = stdin.readLineSync()?.toLowerCase();
@@ -28,13 +32,13 @@ class GameManager {
         alertManager.printMessage("Ошибка ввода. Введите 'да' или 'нет':");
       }
     }
-    
+
     if (choice == 'да') {
       shipManager.manualShipPlacement(playerBoard);
     } else {
       shipManager.placeShips(playerBoard, isPlayer: true);
     }
-    
+
     shipManager.placeShips(computerBoard, isPlayer: false);
     playGame();
   }
@@ -49,6 +53,7 @@ class GameManager {
         playerTurnSuccess = playerTurn();
         if (isGameOver(computerBoard)) {
           alertManager.printMessage("Игрок выиграл!");
+          saveStatistics("Игрок");
           return;
         }
       }
@@ -58,6 +63,7 @@ class GameManager {
         computerTurnSuccess = computerTurn();
         if (isGameOver(playerBoard)) {
           alertManager.printMessage("Компьютер выиграл!");
+          saveStatistics("Компьютер");
           return;
         }
       }
@@ -75,10 +81,12 @@ class GameManager {
       alertManager.printMessage("Попал! Ход продолжается.");
       computerBoard[x][y] = 'X';
       playerScore++;
+      playerHits++;
       return true;
     } else {
       alertManager.printMessage("Мимо!");
       computerBoard[x][y] = '*';
+      playerMisses++;
       return false;
     }
   }
@@ -92,10 +100,12 @@ class GameManager {
       alertManager.printMessage("Компьютер попал! Ход продолжается.");
       playerBoard[x][y] = 'X';
       computerScore++;
+      computerHits++;
       return true;
     } else {
       alertManager.printMessage("Компьютер промахнулся.");
       playerBoard[x][y] = '*';
+      computerMisses++;
       return false;
     }
   }
@@ -142,6 +152,42 @@ class GameManager {
 
   void clearConsole() {
     print("\x1B[2J\x1B[0;0H"); // Код для очистки консоли
+  }
+
+  void saveStatistics(String winner) {
+    var directory = Directory('game_statistics');
+    if (!directory.existsSync()) {
+      directory.createSync();
+    }
+
+    var file = File('${directory.path}/statistics.txt');
+
+    int playerShipsLeft = shipManager.countShips(playerBoard);
+    int computerShipsLeft = shipManager.countShips(computerBoard);
+    int playerShipsDestroyed = shipManager.ships.length - playerShipsLeft;
+    int computerShipsDestroyed = shipManager.ships.length - computerShipsLeft;
+
+    String statistics = '''
+Игра завершена! Победитель: $winner
+
+Общая статистика:
+- Общее количество кораблей у каждого игрока: ${shipManager.ships.length}
+
+Игрок:
+- Разрушенные корабли: $playerShipsDestroyed
+- Оставшиеся корабли: $playerShipsLeft/${shipManager.ships.length}
+- Попадания: $playerHits
+- Промахи: $playerMisses
+
+Компьютер:
+- Разрушенные корабли: $computerShipsDestroyed
+- Оставшиеся корабли: $computerShipsLeft/${shipManager.ships.length}
+- Попадания: $computerHits
+- Промахи: $computerMisses
+''';
+
+    file.writeAsStringSync(statistics);
+    alertManager.printMessage("Статистика игры сохранена в ${file.path}");
   }
 }
 
@@ -190,6 +236,21 @@ class ShipManager {
         }
       }
     }
+  }
+
+  int countShips(List<List<String>> board) {
+    int intactShips = 0;
+    for (var ship in ships) {
+      bool isDestroyed = true;
+      for (var point in ship.coordinates) {
+        if (board[point.x.toInt()][point.y.toInt()] == 'S') {
+          isDestroyed = false;
+          break;
+        }
+      }
+      if (!isDestroyed) intactShips++;
+    }
+    return intactShips;
   }
 
   void manualShipPlacement(List<List<String>> board) {
